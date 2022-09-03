@@ -2,13 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const createError = require('http-errors');
 
-
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
+app.use('/auth', require('./routes/auth.route'));
 app.use('/', require('./routes/vehicle.route'));
 
 //404 handler and pass to error handler
