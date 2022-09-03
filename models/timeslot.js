@@ -1,5 +1,5 @@
 const { sequelize, Sequelize } = require('../database/db_con')
-var Vehicle = sequelize.define('Vehicle', {
+const Timeslot = sequelize.define('Timeslot', {
 
     id: {
         autoIncrement: true,
@@ -7,18 +7,26 @@ var Vehicle = sequelize.define('Vehicle', {
         type: Sequelize.INTEGER
     },
 
-    name: {
+    weekday: {
         type: Sequelize.STRING
+    },
+
+    from: {
+      type: Sequelize.INTEGER
+    },
+
+    to: {
+      type: Sequelize.INTEGER
     },
 
 }, {
     timestamps: false,
     underscored: true,
     freezeTableName: true,
-    tableName: 'vehicles'
+    tableName: 'timeslots'
 })
 
 
 module.exports = {
-    Vehicle,
+    Timeslot,
 }

@@ -7,7 +7,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/auth', require('./routes/auth.route'));
 app.use('/', require('./routes/vehicle.route'));
 
 //404 handler and pass to error handler
@@ -31,3 +30,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log('Server started on port ' + PORT + '...');
 });
+

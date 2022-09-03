@@ -21,6 +21,23 @@ const sequelize = new Sequelize(dbDatabase, dbUsername, dbPassword, {
 })
 
 
+sequelize.authenticate().then( () => {
+  console.log('Connection has been established successfully.');
+  
+
+  sequelize.sync({force:false})
+      .then(() => {
+          console.log(`Database & tables created!`);
+      }).catch((error)=>{
+          return console.error(error);
+      });
+
+}).catch((error) => {
+  console.error('Unable to connect to the database:', error);
+})
+
+
+
 module.exports = {
   sequelize,
   Sequelize

@@ -1,5 +1,7 @@
 const { sequelize, Sequelize } = require('../database/db_con')
-var User = sequelize.define('User', {
+const { Booking } = require('./booking')
+const { Timeslot } = require('./timeslot')
+const VehicleTimeslot = sequelize.define('VehicleTimeslot', {
 
     id: {
         autoIncrement: true,
@@ -7,22 +9,13 @@ var User = sequelize.define('User', {
         type: Sequelize.INTEGER
     },
 
-    firsr_name: {
-        type: Sequelize.STRING
-    },
-    
-    last_name: {
-        type: Sequelize.STRING
-    },
-
 }, {
     timestamps: false,
     underscored: true,
     freezeTableName: true,
-    tableName: 'users'
+    tableName: 'vehicle_timeslot_map'
 })
 
-
 module.exports = {
-    User,
+  VehicleTimeslot,
 }

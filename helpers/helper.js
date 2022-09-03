@@ -97,11 +97,16 @@ const verifyToken = async function (req, res, next) {
   
 }
 
+const deepCopy =function (arr) {
+  return JSON.parse(JSON.stringify(arr))
+}
+
 module.exports = {
   isDef,
   signAccessToken,
   cryptPassword,
   comparePassword,
   successHandler,
-  verifyToken
+  verifyToken,
+  deepCopy
 };
