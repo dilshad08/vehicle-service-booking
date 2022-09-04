@@ -3,10 +3,8 @@ const VehicleController = require('../controllers/vehicle.controller');
 
 const { verifyToken } = require('../helpers/helper');
 
-router.get('', VehicleController.getSlots)
+router.get('/', VehicleController.getSlots)
 
-router.get('/insert', VehicleController.insert)
-
-router.post('/book/:id', verifyToken, VehicleController.bookSlot)
+router.post('/', VehicleController.bookSlot)
 
 module.exports = router

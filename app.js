@@ -7,7 +7,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/', require('./routes/vehicle.route'));
+//routes
+const bookRoute = require('./routes/vehicle.route')
+app.use('/books', bookRoute);
 
 //404 handler and pass to error handler
 app.use((req, res, next) => {

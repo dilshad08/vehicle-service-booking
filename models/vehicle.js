@@ -25,10 +25,6 @@ const Vehicle = sequelize.define('Vehicle', {
     tableName: 'vehicles'
 })
 
-// Relations
-
-// Vehicle.belongsTo(Timeslot, { foreignKey: 'timeslot_id' })
-// Timeslot.belongsTo(Vehicle, { foreignKey: 'vehicle_id' })
 
 Vehicle.belongsToMany(Timeslot, {
     through: VehicleTimeslot,

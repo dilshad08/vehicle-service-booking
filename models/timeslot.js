@@ -1,3 +1,4 @@
+const { Op } = require('sequelize')
 const { sequelize, Sequelize } = require('../database/db_con')
 const Timeslot = sequelize.define('Timeslot', {
 
@@ -5,10 +6,6 @@ const Timeslot = sequelize.define('Timeslot', {
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
-    },
-
-    weekday: {
-        type: Sequelize.STRING
     },
 
     from: {
@@ -25,6 +22,7 @@ const Timeslot = sequelize.define('Timeslot', {
     freezeTableName: true,
     tableName: 'timeslots'
 })
+
 
 
 module.exports = {

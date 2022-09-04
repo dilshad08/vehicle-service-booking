@@ -1,5 +1,6 @@
 const { sequelize, Sequelize } = require('../database/db_con')
 const { Timeslot } = require('./timeslot')
+const { Vehicle } = require('./vehicle')
 const Booking = sequelize.define('Booking', {
 
     id: {
@@ -8,32 +9,29 @@ const Booking = sequelize.define('Booking', {
         type: Sequelize.INTEGER
     },
 
-    status: {
-        type: Sequelize.BOOLEAN,
-        default: false
-    },
-
-    created_at: {
-      type: 'TIMESTAMP',
-      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+    date: {
+      type: Sequelize.DATEONLY,
+    //   defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       allowNull: false
     },
 
-    updated_at: {
-        type: 'TIMESTAMP',
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-        allowNull: false
+    vehicle_id: {
+        type: Sequelize.INTEGER
+    },
+
+    timeslot_id: {
+        type: Sequelize.INTEGER
     }
 
 }, {
-    createdAt: 'created_at',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
     freezeTableName: true,
     tableName: 'bookings'
 })
 
 Booking.belongsTo(Timeslot, {foreign_key: 'timeslot_id'} )
+Booking.belongsTo(Vehicle, {foreign_key: 'vehicle_id'} )
 
 
 module.exports = {
