@@ -1,6 +1,6 @@
 # Project Title
 
-Vehicle Bookin Service
+Vehicle Booking Service
 
 ---
 ## Requirements
