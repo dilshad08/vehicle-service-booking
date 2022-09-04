@@ -7,15 +7,92 @@ const {
   isEmpty,
 } = require('lodash');
 const {Op} = require('sequelize');
+const { VehicleTimeslot } = require('../models/timeslot_vehicle_map');
 
 
 module.exports = {
 
-  // User registration controller
+  // Get slots by vehicle Id
+  getSlotsById: async ( req, res, next) => {
+    try {
+
+      const {date} = req.query;
+      const { vehicleId } = req.params;
+    
+      let slots = await Booking.findAll({
+        where: {
+          vehicle_id: vehicleId,
+          date: new Date(date),
+        },
+        include: [{
+          model: Timeslot,
+          attributes: ['id']
+        }],
+      })
+   
+      slots = deepCopy(slots)
+
+      const timeslotIdArr = slots.map((obj) => {
+        return obj.Timeslot.id
+      })
+
+      const currenDate = new Date();
+      const reqDate = new Date(date);
+      let booking = [];
+
+      if((!isEmpty(slots) && reqDate >= currenDate)){
+
+        booking = await Timeslot.findAll({
+          where: {
+            id: {[Op.not]: timeslotIdArr}
+          },
+          attributes: ['from', 'to']
+        })
+      } 
+      if((isEmpty(slots) && reqDate > currenDate)){
+
+        booking = await Timeslot.findAll({
+          attributes: ['from', 'to']
+        })
+      }
+
+      booking = deepCopy(booking)
+      successHandler(res, null, booking);
+      
+    } catch (error) {
+      next(error)
+    }
+  },
+
+  // Get slots controller for all vehicles
   getSlots: async (req, res, next) => {
     try {
-      const {vehicleId, date} = req.query;
-      let slots = await Booking.findAll({
+      const {date} = req.query;
+
+      let slots = await Vehicle.findAll({
+        include: [{
+          model: Timeslot,
+        }],
+      })
+
+      slots = deepCopy(slots)
+
+      const mapObj = {};
+      const promiseArr = [];
+      slots.forEach((obj) => {
+        mapObj[obj.id] = {
+          vehicle: {id: obj.id, name: obj.name, model: obj.model},
+          timeslotArr: []
+        }
+        obj.Timeslots.map((innerObj) => {
+
+          mapObj[obj.id].timeslotArr.push(innerObj.VehicleTimeslot.timeslot_id)
+
+        })
+      })
+
+
+      slots = await Booking.findAll({
         where: {
           // vehicle_id: vehicleId,
           date: new Date(date),
@@ -29,43 +106,82 @@ module.exports = {
           attributes: ['id', 'name', 'model']
         }],
       })
-      slots = deepCopy(slots)
 
-      const mapObj = {};
-      slots.forEach((obj) => {
-        mapObj[obj.vehicle_id] = {
-          vehicle: obj.Vehicle,
-          timeslotArr: []
-        }
-      })
-      slots.forEach((obj) => {
-        mapObj[obj.vehicle_id]['timeslotArr'].push(obj.timeslot_id)
-      })
+      const currenDate = new Date();
+      const reqDate = new Date(date);
 
-      const promiseArr = [];
-      for (let key of Object.keys(mapObj)) {
+      
+      if(isEmpty(slots) && reqDate > currenDate){
+        slots = await Vehicle.findAll({
+          include: [{
+            model: Timeslot,
+          }],
+        })
 
-        const promise = (async () => {
-          let booking = await Timeslot.findAll({
-            where: {
-              id: {[Op.not]: mapObj[key].timeslotArr}
-            },
-            attributes: ['from', 'to'],
+        slots = deepCopy(slots)
+
+        slots.forEach((obj) => {
+          mapObj[obj.id] = {
+            vehicle: {id: obj.id, name: obj.name, model: obj.model},
+            timeslotArr: []
+          }
+          obj.Timeslots.map((innerObj) => {
+
+            mapObj[obj.id].timeslotArr.push(innerObj.VehicleTimeslot.timeslot_id)
+
           })
-          booking.vehicle = mapObj[key].vehicle
-          booking.key = key
-          return booking
-        })();
-        promiseArr.push(promise)
+        })
+
+        for (let key of Object.keys(mapObj)) {
+
+          const promise = (async () => {
+            let booking = await Timeslot.findAll({
+              
+              attributes: ['from', 'to'],
+            })
+            booking.vehicle = mapObj[key].vehicle
+            booking.key = key
+            return booking
+          })();
+          promiseArr.push(promise)
+        }
+      }else{
+        slots = deepCopy(slots)
+        slots.forEach((obj) => {
+          mapObj[obj.vehicle_id] = {
+            vehicle: obj.Vehicle,
+            timeslotArr: []
+          }
+        })
+        slots.forEach((obj) => {
+          mapObj[obj.vehicle_id]['timeslotArr'].push(obj.timeslot_id)
+        })
+
+        for (let key of Object.keys(mapObj)) {
+
+          const promise = (async () => {
+            let booking = await Timeslot.findAll({
+              where: {
+                id: {[Op.not]: mapObj[key].timeslotArr}
+              },
+              attributes: ['from', 'to'],
+            })
+            booking.vehicle = mapObj[key].vehicle
+            booking.key = key
+            return booking
+          })();
+          promiseArr.push(promise)
+        }
       }
+      
       let result = await Promise.all(promiseArr);
 
       result.map((obj) => {
 
-        mapObj[obj.key] = {vehicle: obj.vehicle,timeslotArr: [] }
+        mapObj[obj.key] = {vehicle: obj.vehicle,timeslots: [] }
 
         obj.map((innerObj) => {
-          mapObj[obj.key].timeslotArr.push(innerObj.dataValues)
+          mapObj[obj.key].timeslots.push(innerObj.dataValues)
           console.log();
         })
         return mapObj
@@ -78,7 +194,7 @@ module.exports = {
     }
   },
 
-  // User Login Controller
+  // Book slot controller for a vehicle
   bookSlot: async (req, res, next) => {
     try{
       const { vehicleId, from, to, date } = req.body.bookSlot;
