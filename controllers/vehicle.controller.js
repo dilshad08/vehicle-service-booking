@@ -8,16 +8,24 @@ const {
 } = require('lodash');
 const {Op} = require('sequelize');
 const { VehicleTimeslot } = require('../models/timeslot_vehicle_map');
+const { validateGetSlotRequest, validateGetSlotsRequest, validateBookSlotsRequest } = require('../helpers/validation');
 
 
 module.exports = {
 
   // Get slots by vehicle Id
   getSlotsById: async ( req, res, next) => {
-    try {
 
-      const {date} = req.query;
+    const {date} = req.query;
       const { vehicleId } = req.params;
+
+    try {
+      validateGetSlotRequest({ date, vehicleId})
+    } catch (ex) {
+      next(createError(401, ex));
+    }
+
+    try {
     
       let slots = await Booking.findAll({
         where: {
@@ -66,8 +74,13 @@ module.exports = {
 
   // Get slots controller for all vehicles
   getSlots: async (req, res, next) => {
+    const {date} = req.query;
     try {
-      const {date} = req.query;
+      validateGetSlotsRequest({date})
+    } catch (ex) {
+      next(createError(401, ex));
+    }
+    try {
 
       let slots = await Vehicle.findAll({
         include: [{
@@ -196,8 +209,16 @@ module.exports = {
 
   // Book slot controller for a vehicle
   bookSlot: async (req, res, next) => {
+
+    const { vehicleId, from, to, date } = req.body.bookSlot;
+
+    try {
+      validateBookSlotsRequest({vehicleId, from, to, date})
+    } catch (ex) {
+      next(createError(401, ex));
+    }
+
     try{
-      const { vehicleId, from, to, date } = req.body.bookSlot;
       let isAvailable = await Timeslot.findAll({
         where: {
           from,to
